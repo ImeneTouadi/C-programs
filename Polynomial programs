@@ -1,0 +1,423 @@
+#include<stdlib.h>
+#include<stdio.h>
+#include<math.h>
+#include<windows.h>
+
+// The structures used
+
+struct term;
+struct polynome;
+
+struct term
+{
+	int coeff;
+	int power;
+	struct term *adr;
+} ;
+
+struct polynome
+{
+	struct term *first;
+	struct term *last;
+	int size;
+};
+
+// Functons and procedures used
+
+// Function to allocate a memory for the struct term
+struct term *allocate ( );
+
+// Precedure that assign q in the adr field of the term pointed by p
+void ass_adr(struct term *p, struct term *q);
+
+// Function that returns the next term in a linked list of polynomial terms
+struct term *next(struct term *p);
+
+// Function that returns the previous term in a linked list of polynomial terms
+struct term *previous(struct polynome *L , struct term *p);
+
+// Procedure to assign the terms of the polynome by introducing the coeff and power
+void ass_term( struct term *V);
+
+void Color(int TextColor,int BackColor);
+
+// Procedure to create a polynome
+void create_polynome (struct polynome *p);
+
+// Procedure to display the polynome as a linked list
+void display_polynome (struct polynome L);
+
+// 1. Calculate the value of the polynomial at a given point x
+float calculate_x(struct polynome L);
+
+//2.Calculate the derivative of a polynomial
+void derivative ( struct polynome *P, struct polynome *S);
+
+//3.Calculate the sum of two polynomials
+void sum(struct polynome *P1, struct polynome *P2, struct polynome *P_sum);
+
+//4.Calculate the product of two polynomials
+void product (struct polynome *P1, struct polynome *P2, struct polynome *P_product);
+
+// Procedure of swapping two terms
+void swap( struct polynome *P ,struct term *A , struct term *B );
+
+void bubble_sort( struct polynome *L );
+
+// Main program
+int main()
+{
+struct polynome P,S, P_sum, P_product;
+int choice, end=0;
+
+do {
+printf("Menu :\n");
+printf("\n");
+printf("     1) Create a polynome.\n");
+printf("\n");
+printf("     2) Calculate a polynome on a given point x.\n");
+printf("\n");
+printf("     3) Calculate the derivative of a polynome.\n");
+printf("\n");
+printf("     4) Calculate the sum of two polynomes.\n");
+printf("\n");
+printf("     5) Calculate the product of two polynomes.\n");
+printf("\n");
+printf("     6) Exit.\n");
+printf("\n");
+
+do {
+    printf("     Enter your choice : ");
+    scanf("%d",&choice);
+    printf("\n"); } while ( (choice <1) || (choice >6)) ;
+
+		switch (choice)
+{
+case 1:
+    printf("You choose to create a polynome.\n\n");
+    create_polynome(&P);
+    bubble_sort(&P);
+    display_polynome(P);
+    printf("\n\n\n");
+    break;
+
+case 2:
+    printf("You choose to calculate the polynome at a given point x.\n\n");
+    create_polynome(&P);
+    bubble_sort(&P);
+    display_polynome(P);
+    printf("%10.2f\n",calculate_x (P));  ;
+    printf("\n\n\n");
+    break;
+
+case 3:
+    printf("You choose to to calculate the derivative of a polynome.\n\n");
+    create_polynome(&P);
+    derivative(&P,&S);
+    bubble_sort(&S);
+    display_polynome(S);
+    printf("\n\n\n");
+    break;
+
+case 4:
+    printf("You choose to to calculate the sum of two polynomes.\n\n");
+    sum(&P,&S,&P_sum);
+    bubble_sort(&P_sum);
+    display_polynome(P_sum);
+    printf("\n\n\n");
+    break;
+case 5:
+    printf("You choose to to calculate the product of two polynomes.\n\n");
+    product(&P,&S,&P_product);
+    bubble_sort(&P_product);
+    display_polynome(P_product);
+    printf("\n\n\n");
+    break;
+case 6:
+    end = 1 ;
+    break;
+default:
+    printf("Impossible - try again");
+    break;
+}
+} while (end == 0 );
+	return 0 ;
+}
+
+// The bodies of functions
+struct term *allocate ( )
+{
+return ((struct term*) malloc(sizeof(struct term)));
+}
+//---------------------------------------------------
+void ass_adr(struct term *p, struct term *q)
+{ p->adr = q; }
+//---------------------------------------------------
+struct term *next(struct term *p)
+{ return(p->adr); }
+//---------------------------------------------------
+struct term *previous(struct polynome *L , struct term *p)
+{
+	struct term *q ,*r;
+	q = L->first ;
+
+	while (q != p) {
+		r = q ;
+		q = next(q);
+	}
+
+	return r;
+}
+//---------------------------------------------------
+void ass_term( struct term *V)
+{
+	printf("Enter the coefficient of the term :");
+	scanf("%d",&V->coeff);
+	printf("Enter the power of the term :");
+	scanf("%d",&V->power);
+}
+//---------------------------------------------------
+void Color(int TextColor,int BackColor)
+{
+    HANDLE H=GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(H,BackColor*16+TextColor);
+}
+//---------------------------------------------------
+void create_polynome (struct polynome *p)
+{
+	struct term *V, *q;
+	int i;
+
+	printf("Enter the numbre of terms in the polynome :");
+	scanf("%d",&p->size);
+	p->first= NULL;
+	for (i=0; i < p->size; i++)
+	{
+		V= allocate ();
+		ass_term(V);
+		if (p->first != NULL) ass_adr(q,V);
+		else (p->first = V);
+		q=V;
+	}
+	ass_adr(q,NULL);
+	p->last = q;
+}
+//---------------------------------------------------
+void display_polynome (struct polynome L)
+{
+	struct term *p;
+	int i;
+	p = L.first;
+	Color(13,16);
+    printf("\n");
+    for (i=0; i<L.size-1 ;i++)
+        printf(" ----------      ");
+	    printf(" ----------\n");
+	while (p != NULL) {
+        Color(13,16);
+        printf(" |");
+        Color(11,16);
+		printf ("%3d ", p->coeff);
+		Color(13,16);
+		printf("|");
+		Color(11,16);
+		printf("%3d ", p->power);
+        Color(13,16);
+		printf("| --- ");
+		p = next(p);
+	}
+	printf("[-\n");
+
+	for (i=0; i<L.size-1; i++)
+        printf(" ----------      ");
+	    printf(" ---------- \n");
+	    Color(15,16);
+}
+//---------------------------------------------------
+float calculate_x(struct polynome L)
+{
+    struct term *p;
+    float val, s=0;
+
+    p= L.first;
+
+    printf("Enter the value you want to calculete the polynome at : ");
+    scanf("%f",&val);
+    while (p!=NULL)
+    {
+        s= s+(p->coeff * pow(val,p->power)) ;
+        p= next(p);
+    }
+    printf("\nThe result is : ");
+    return s;
+}
+//---------------------------------------------------
+void derivative ( struct polynome *P, struct polynome *S)
+{
+    struct term *R,*V,*C;
+    int cpt=0;
+
+    S->first=NULL;
+    R= P->first;
+    while (R!=NULL)
+	{
+	    if ((R->coeff != 0) && (R->power !=0))
+        {cpt++;
+		V= allocate ();
+		V->coeff= R->coeff * R->power;
+		V->power= R->power -1;
+		if (S->first != NULL) ass_adr(C,V);
+		else (S->first = V);
+		C=V;
+		}
+		R=next(R);
+	}
+	ass_adr(C,NULL);
+	S->last = C;
+	S->size=cpt;
+}
+//---------------------------------------------------
+void sum(struct polynome *P1, struct polynome *P2, struct polynome *P_sum)
+{
+   int cpt=0;
+   struct term *P,*Q,*R,*C;
+   printf("Polynome 1:\n");
+   create_polynome(P1);
+   printf("Polynome 2:\n");
+   create_polynome(P2);
+   P_sum->first=NULL;
+   P=P1->first;
+   Q=P2->first;
+   while ((P != NULL) && (Q != NULL))
+   {
+      R=allocate();
+      if ((P->power) > (Q->power))
+      {
+          R->coeff= Q->coeff;
+          R->power = Q->power;
+          Q= next(Q);
+      }
+      else
+      {
+        if ((P->power) < (Q->power))
+         {
+          R->coeff= P->coeff;
+          R->power = P->power;
+          P= next(P);
+         }
+         else
+         {
+           R->coeff= P->coeff+Q->coeff;
+           R->power = P->power;
+           P= next(P);
+           Q= next(Q);
+         }
+      }
+      if (P_sum->first != NULL) ass_adr(C,R);
+      else (P_sum->first=R) ;
+      C=R;
+      cpt++;
+      R=next(R);
+    }
+    while (P!=NULL)
+    {
+       R= allocate();
+       R->coeff = P->coeff;
+       R->power = P->power;
+       if (P_sum->first != NULL) ass_adr(C,R);
+       else (P_sum->first=R) ;
+       C=R;
+       P=next(P);
+       R=next(R);
+       cpt++;
+    }
+     while (Q!=NULL)
+    {
+       R= allocate();
+       R->coeff = Q->coeff;
+       R->power = Q->power;
+       if (P_sum->first != NULL) ass_adr(C,R);
+       else (P_sum->first=R) ;
+       C=R;
+       Q=next(Q);
+       R=next(R);
+       cpt++;
+
+    }
+    P_sum->last=C;
+    ass_adr(C,NULL);
+    P_sum->size=cpt;
+}
+//---------------------------------------------------
+void product (struct polynome *P1, struct polynome *P2, struct polynome *P_product)
+{
+    int cpt=0;
+    struct term *P,*Q,*R,*C;
+
+    printf("Polynome 1:\n");
+    create_polynome(P1);
+    printf("Polynome 2:\n");
+    create_polynome(P2);
+    P_product->first=NULL;
+    P=P1->first;
+    Q=P2->first;
+    while (P !=NULL)
+    {
+        Q=P2->first;
+        while (Q != NULL)
+        {
+            R=allocate();
+            R->coeff= P->coeff * Q->coeff;
+            R->power = P->power + Q->power;
+            if (P_product->first != NULL) ass_adr(C,R);
+            else (P_product->first=R) ;
+            C=R;
+            Q=next(Q);
+            cpt++;
+            R=next(R);
+        }
+        P=next(P);
+    }
+    P_product->last=C;
+    ass_adr(C,NULL);
+    P_product->size=cpt;
+}
+//---------------------------------------------------
+void swap( struct polynome *P ,struct term *A , struct term *B )
+{
+
+   struct term *C;
+
+
+   C = allocate();
+
+        C->coeff=A->coeff;
+        C->power= A->power;
+
+        A->coeff=B->coeff;
+        A->power= B->power;
+
+        B->coeff= C->coeff;
+        B->power= C->power;
+
+    free(C);
+}
+//---------------------------------------------------
+void bubble_sort( struct polynome *L ) {
+	int cpt;
+	struct term *P ;
+
+
+	do {
+		P = L->first;
+
+		cpt = 0 ;
+		while (P != L->last) {
+		if ( P->power > ((next(P))->power)) {
+			swap(L,P,next(P)) ;
+			cpt++;
+			}
+	P = next(P) ;
+	}
+    } while (cpt != 0) ;
+}
